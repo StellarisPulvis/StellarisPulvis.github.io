@@ -287,7 +287,7 @@ draft: false
         data-reactions-enabled="1"
         data-emit-metadata="0"
         data-input-position="bottom"
-        data-theme="dark"
+        data-theme="transparent_dark"
         data-lang="{{ config.comment.lang }}"
         crossorigin="anonymous"
         async>
