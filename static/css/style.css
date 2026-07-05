@@ -1,8 +1,8 @@
 /* ============================================
-   Stellaris — 炫酷博客主题
+   Stellaris — 星星与尘土
    ============================================ */
 
-/* ---------- Variables ---------- */
+/* ---------- Light Theme (default) ---------- */
 :root {
     --bg: #faf6f0;
     --bg-card: #fdfaf5;
@@ -17,9 +17,32 @@
     --glow: rgba(212, 163, 115, 0.25);
     --code-bg: #f5f0e8;
     --code-text: #3d3225;
+    --header-bg: rgba(253, 250, 245, 0.85);
+    --search-bg: rgba(255, 255, 255, 0.6);
+    --shadow: rgba(61, 50, 37, 0.08);
     --radius: 16px;
     --radius-sm: 8px;
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- Dark Theme ---------- */
+[data-theme="dark"] {
+    --bg: #0a0a14;
+    --bg-card: rgba(255, 255, 255, 0.04);
+    --bg-card-hover: rgba(255, 255, 255, 0.08);
+    --text: #e2e8f0;
+    --text-light: #94a3b8;
+    --text-muted: #64748b;
+    --border: rgba(255, 255, 255, 0.08);
+    --accent-1: #d4a373;
+    --accent-2: #f0b37e;
+    --accent-3: #d68c79;
+    --glow: rgba(212, 163, 115, 0.15);
+    --code-bg: #14142a;
+    --code-text: #e2e8f0;
+    --header-bg: rgba(10, 10, 20, 0.8);
+    --search-bg: rgba(255, 255, 255, 0.06);
+    --shadow: rgba(0, 0, 0, 0.3);
 }
 
 /* ---------- Global ---------- */
@@ -40,9 +63,27 @@ body {
     background: var(--bg);
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background var(--transition), color var(--transition);
 }
 
-/* Animated gradient background */
+/* ---------- Stardust Canvas ---------- */
+#stardust-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+[data-theme="dark"] #stardust-canvas {
+    opacity: 1;
+}
+
+/* ---------- Animated gradient background ---------- */
 body::before {
     content: "";
     position: fixed;
@@ -56,6 +97,14 @@ body::before {
         radial-gradient(ellipse at 80% 20%, rgba(188, 108, 37, 0.10) 0%, transparent 50%),
         radial-gradient(ellipse at 50% 80%, rgba(214, 140, 121, 0.08) 0%, transparent 50%);
     animation: bgShift 12s ease-in-out infinite alternate;
+    transition: opacity var(--transition);
+}
+
+[data-theme="dark"] body::before {
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(212, 163, 115, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(240, 179, 126, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(214, 140, 121, 0.05) 0%, transparent 50%);
 }
 
 @keyframes bgShift {
@@ -64,7 +113,7 @@ body::before {
     100% { transform: scale(1) rotate(-1deg); }
 }
 
-/* Subtle grid overlay */
+/* ---------- Subtle grid overlay ---------- */
 body::after {
     content: "";
     position: fixed;
@@ -77,15 +126,18 @@ body::after {
         linear-gradient(rgba(61, 50, 37, 0.04) 1px, transparent 1px),
         linear-gradient(90deg, rgba(61, 50, 37, 0.04) 1px, transparent 1px);
     background-size: 60px 60px;
+    transition: opacity var(--transition);
+}
+
+[data-theme="dark"] body::after {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
 
 /* ---------- Scrollbar ---------- */
-::-webkit-scrollbar {
-    width: 8px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
     background: linear-gradient(to bottom, var(--accent-1), var(--accent-2));
     border-radius: 4px;
@@ -97,7 +149,11 @@ body::after {
 /* ---------- Selection ---------- */
 ::selection {
     background: rgba(212, 163, 115, 0.3);
-    color: #3d3225;
+}
+
+[data-theme="dark"] ::selection {
+    background: rgba(212, 163, 115, 0.3);
+    color: #fff;
 }
 
 /* ---------- Layout ---------- */
@@ -114,7 +170,7 @@ header {
     z-index: 100;
     margin: 16px 24px 40px;
     border-radius: var(--radius);
-    background: rgba(253, 250, 245, 0.85);
+    background: var(--header-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border);
@@ -177,6 +233,25 @@ nav {
     background: rgba(212, 163, 115, 0.1);
 }
 
+/* ---------- Theme Toggle ---------- */
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.15rem;
+    line-height: 1;
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: var(--text-light);
+    transition: var(--transition);
+    margin-left: 6px;
+}
+
+.theme-toggle:hover {
+    color: var(--text);
+    background: rgba(212, 163, 115, 0.1);
+}
+
 /* ---------- Search ---------- */
 .search-box {
     position: relative;
@@ -188,7 +263,7 @@ nav {
     padding: 6px 14px 6px 32px;
     border-radius: 100px;
     border: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.6);
+    background: var(--search-bg);
     color: var(--text);
     font-size: 0.82rem;
     font-family: inherit;
@@ -202,7 +277,6 @@ nav {
 #search-input:focus {
     width: 240px;
     border-color: rgba(212, 163, 115, 0.4);
-    background-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 0 16px rgba(212, 163, 115, 0.1);
 }
 
@@ -218,12 +292,12 @@ nav {
     width: 360px;
     max-height: 400px;
     overflow-y: auto;
-    background: rgba(253, 250, 245, 0.95);
+    background: var(--header-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    box-shadow: 0 12px 48px rgba(61, 50, 37, 0.12);
+    box-shadow: 0 12px 48px var(--shadow);
     z-index: 300;
 }
 
@@ -276,7 +350,6 @@ nav {
     font-size: 0.85rem;
 }
 
-/* search results scrollbar */
 .search-results::-webkit-scrollbar { width: 4px; }
 .search-results::-webkit-scrollbar-thumb {
     background: var(--accent-1);
@@ -358,7 +431,7 @@ main {
     background: var(--bg-card-hover);
     border-color: rgba(212, 163, 115, 0.25);
     transform: translateY(-4px);
-    box-shadow: 0 12px 48px rgba(61, 50, 37, 0.08), 0 0 24px var(--glow);
+    box-shadow: 0 12px 48px var(--shadow), 0 0 24px var(--glow);
 }
 
 .post-card:hover::before {
@@ -547,7 +620,7 @@ main {
     color: var(--text-light);
 }
 
-/* ---------- Content (article body) ---------- */
+/* ---------- Content ---------- */
 .content {
     line-height: 1.9;
     font-size: 1.05rem;
@@ -599,7 +672,7 @@ main {
     height: auto;
     border-radius: var(--radius-sm);
     margin: 1.5rem 0;
-    box-shadow: 0 4px 24px rgba(61, 50, 37, 0.1);
+    box-shadow: 0 4px 24px var(--shadow);
     transition: var(--transition);
 }
 
@@ -621,7 +694,6 @@ main {
     margin-bottom: 0;
 }
 
-/* Code blocks */
 .content pre {
     background: var(--code-bg);
     border: 1px solid var(--border);
@@ -631,7 +703,7 @@ main {
     margin: 1.5rem 0;
     font-size: 0.85rem;
     line-height: 1.6;
-    box-shadow: 0 4px 24px rgba(61, 50, 37, 0.06);
+    color: var(--code-text);
 }
 
 .content code {
@@ -743,7 +815,7 @@ main {
     background-clip: text;
 }
 
-/* ---------- Announcement Bar (mobile) ---------- */
+/* ---------- Announcement Bar ---------- */
 .announcement-bar {
     display: none;
     flex-direction: column;
@@ -767,7 +839,7 @@ main {
 .announcement-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; color: var(--text); }
 .announcement-content { font-size: 0.85rem; color: var(--text-light); line-height: 1.6; }
 
-/* ---------- Sidebar (desktop) ---------- */
+/* ---------- Sidebar ---------- */
 .content-with-sidebar {
     display: flex;
     gap: 32px;
@@ -848,7 +920,7 @@ footer:hover p {
     opacity: 1;
 }
 
-/* ---------- Reading progress (CSS only trick) ---------- */
+/* ---------- Reading progress ---------- */
 .reading-progress {
     position: fixed;
     top: 0;

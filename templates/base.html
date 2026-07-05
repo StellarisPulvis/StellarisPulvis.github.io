@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <canvas id="stardust-canvas"></canvas>
     <div class="reading-progress"></div>
     <header>
         <nav>
@@ -27,6 +28,7 @@
                 <input id="search-input" type="text" placeholder="{{ lang_config.nav_search }}..." autocomplete="off">
                 <div id="search-results" class="search-results"></div>
             </div>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
         </nav>
     </header>
     <main>
@@ -37,5 +39,6 @@
     </footer>
     <script src="/js/livereload.js"></script>
     <script src="/js/search.js"></script>
+    <script src="/js/theme.js"></script>
 </body>
 </html>
