@@ -22,10 +22,6 @@
                 <a href="/{{ lang }}/">{{ lang_config.nav_home }}</a>
                 <a href="/{{ lang }}/tags">{{ lang_config.nav_tags }}</a>
                 <a href="/{{ lang }}/about/">{{ lang_config.nav_about }}</a>
-                <span class="nav-sep">|</span>
-                {% for l in config.site.languages %}
-                <a href="/{{ l }}/" class="lang-switch {% if l == lang %}active{% endif %}">{{ l | upper }}</a>
-                {% endfor %}
             </div>
             <div class="search-box">
                 <input id="search-input" type="text" placeholder="{{ lang_config.nav_search }}..." autocomplete="off">
