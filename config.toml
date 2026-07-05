@@ -61,12 +61,12 @@ title = "📝 Always Growing"
 content = "Everything worth sharing — minimalist practices, DIY delights, reflections on life."
 date = "2026-07"
 
-# giscus (optional)
-# [comment]
-# enable = true
-# repo = "owner/repo"
-# repo_id = "R_kgXXXXXXXXX"
-# category = "Announcements"
-# category_id = "DIC_kwXXXXXXXXX"
-# mapping = "pathname"
-# lang = "zh-CN"
+# giscus
+[comment]
+enable = true
+repo = "StellarisPulvis/StellarisPulvis.github.io"
+repo_id = "R_kgDOTODx7Q"
+category = "Announcements"
+category_id = "DIC_kwDOTODx7c4DAiHL"
+mapping = "pathname"
+lang = "zh-CN"

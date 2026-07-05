@@ -43,8 +43,22 @@
     {% if config.comment.enable %}
     <div class="post-comments">
         <h2>{{ lang_config.comment_title }}</h2>
-        <div class="giscus" data-repo="{{ config.comment.repo }}" data-repo-id="{{ config.comment.repo_id }}" data-category="{{ config.comment.category }}" data-category-id="{{ config.comment.category_id }}" data-mapping="{{ config.comment.mapping }}" data-lang="{{ config.comment.lang }}">
-        </div>
+        <div class="giscus"></div>
+        <script src="https://giscus.app/client.js"
+            data-repo="{{ config.comment.repo }}"
+            data-repo-id="{{ config.comment.repo_id }}"
+            data-category="{{ config.comment.category }}"
+            data-category-id="{{ config.comment.category_id }}"
+            data-mapping="{{ config.comment.mapping }}"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="dark"
+            data-lang="{{ config.comment.lang }}"
+            crossorigin="anonymous"
+            async>
+        </script>
     </div>
     {% endif %}
     {% endif %}
