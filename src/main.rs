@@ -2,6 +2,7 @@ mod builder;
 mod config;
 mod content;
 mod feed;
+mod gui;
 mod markdown;
 mod serve;
 mod template;
@@ -39,6 +40,8 @@ enum Commands {
     },
     /// Initialize a new blog project
     Init,
+    /// Launch the desktop GUI manager
+    Gui,
 }
 
 #[tokio::main]
@@ -54,6 +57,7 @@ async fn main() -> Result<()> {
         Commands::Init => cmd_init(&project_dir),
         Commands::Build => cmd_build(&project_dir),
         Commands::Serve { port } => cmd_serve(&project_dir, port).await,
+        Commands::Gui => cmd_gui(&project_dir),
     }
 }
 
@@ -1048,7 +1052,13 @@ footer:hover p { opacity: 1; }
 
     println!("✅ 博客项目已初始化: {}", project_dir.display());
     println!("运行 `cargo run -- serve` 启动开发服务器");
+    println!("运行 `cargo run -- gui`  启动桌面管理程序");
 
+    Ok(())
+}
+
+fn cmd_gui(project_dir: &PathBuf) -> Result<()> {
+    gui::run(project_dir);
     Ok(())
 }
 
