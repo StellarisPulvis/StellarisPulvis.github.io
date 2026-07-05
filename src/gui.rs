@@ -2,7 +2,8 @@ use std::path::PathBuf;
 use std::sync::mpsc;
 use std::thread;
 
-use eframe::egui::{self, CornerRadius, Frame};
+use std::sync::Arc;
+use eframe::egui::{self, CornerRadius, FontData, FontDefinitions, FontFamily, Frame};
 
 use crate::config::Config;
 use crate::content::Post;
@@ -35,10 +36,43 @@ pub fn run(project_dir: &PathBuf) {
     };
 
     let app = StellarisApp::new(project_dir.clone());
+
+    let font_paths = [
+        "/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",
+        "/usr/share/fonts/todesk/NotoSansCJK-Regular.ttc",
+    ];
+
+    let mut font_path: Option<&str> = None;
+    for p in &font_paths {
+        if std::path::Path::new(p).exists() {
+            font_path = Some(p);
+            break;
+        }
+    }
+
     let _ = eframe::run_native(
         "Stellaris Pulvis",
         options,
-        Box::new(|_cc| Ok(Box::new(app))),
+        Box::new(move |cc| {
+            if let Some(path) = font_path {
+                if let Ok(font_bytes) = std::fs::read(path) {
+                    let mut fonts = FontDefinitions::empty();
+                    fonts.font_data.insert(
+                        "cjk".to_string(),
+                        Arc::new(FontData::from_owned(font_bytes)),
+                    );
+                    if let Some(families) = fonts.families.get_mut(&FontFamily::Proportional) {
+                        families.insert(0, "cjk".to_string());
+                    }
+                    fonts.families
+                        .entry(FontFamily::Monospace)
+                        .or_insert_with(Vec::new)
+                        .insert(0, "cjk".to_string());
+                    cc.egui_ctx.set_fonts(fonts);
+                }
+            }
+            Ok(Box::new(app))
+        }),
     );
 }
 
