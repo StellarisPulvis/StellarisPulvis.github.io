@@ -28,6 +28,14 @@ Here we talk about minimalist practices, the joy of DIY, good books we've read, 
 
 Every seed needs sunlight and conversation to sprout. So your voice is welcome here — let's discuss, share, and grow together.
 
+---
+
+**Fourier Transform / 傅里叶变换**
+
+$$
+\hat{f}(\xi) = \int_{-\infty}^{\infty} f(x) \, e^{-2\pi i x \xi} \, dx
+$$
+
 >  Beneath the stars, above the dust.
 >
 > Share, exchange, grow together. 

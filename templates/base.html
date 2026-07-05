@@ -12,6 +12,9 @@
     <link rel="icon" href="/avatar.svg" type="image/svg+xml">
     <meta property="og:image" content="/avatar.svg">
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <script>
     (function(){var t=localStorage.getItem('stellaris-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.setAttribute('data-theme','dark');}})();
     </script>
@@ -43,5 +46,15 @@
     <script src="/js/livereload.js"></script>
     <script src="/js/search.js"></script>
     <script src="/js/theme.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      if(typeof katex==='undefined')return;
+      document.querySelectorAll('.math-display,.math').forEach(function(el){
+        var display=el.classList.contains('math-display');
+        try{katex.render(el.textContent.trim(),el,{displayMode:display,throwOnError:false});
+        }catch(e){el.textContent='Error: '+e.message;}
+      });
+    });
+    </script>
 </body>
 </html>
