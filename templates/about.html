@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ lang_config.nav_about }} — {{ lang_config.title }}{% endblock %}
+{% block content %}
+<article class="post-full about-page">
+    <header>
+        <h1>{{ lang_config.nav_about }} {{ lang_config.title }}</h1>
+    </header>
+
+    <div class="content">
+        {% if lang == "zh" %}
+        <h2>✨ 名字的由来</h2>
+        <p><strong>Stellaris Pulvis</strong>，拉丁语意为「星尘」。</p>
+        <p>这个名字来源于《空洞骑士》中信仰者神龛里的一句话——<strong>「星星与尘土」</strong>。初见时便被深深触动：星辰高远璀璨，尘土卑微平凡，但二者本是一体。我们都是星尘。</p>
+        <p>这个博客便是这样一粒星尘——微小，却承载着值得被分享的光芒。</p>
+
+        <h2>🧑‍🚀 关于我</h2>
+        <p>我是一个极简主义者和深度 DIY 爱好者。喜欢折腾自己的电脑，把系统一点点打磨成最符合自己心意的模样——<strong>极简、流畅、迅速</strong>。</p>
+        <p>对我而言，极简不是匮乏，而是去掉一切不必要的，留下最本质的。DIY 也不只是动手，更是一种创造和掌控的乐趣。</p>
+        <p>建这个博客，是为了分享想法、倾听声音，和大家一起成长。</p>
+
+        <h2>📬 联系方式</h2>
+        <p>如果你有什么想说的，欢迎写信给我：</p>
+        <p><a href="mailto:starsdusts@foxmail.com">starsdusts@foxmail.com</a></p>
+
+        {% else %}
+        <h2>✨ The Story Behind the Name</h2>
+        <p><strong>Stellaris Pulvis</strong> — Latin for <strong>«Stardust»</strong>.</p>
+        <p>This name was inspired by a line from a shrine in <em>Hollow Knight</em>: <strong>«Stars and Dust»</strong>. It struck me the moment I saw it — the stars shine distant and brilliant, while dust is humble and ordinary, yet they are one and the same. We are all made of stardust.</p>
+        <p>This blog is a speck of that dust — small, yet carrying light worth sharing.</p>
+
+        <h2>🧑‍🚀 About Me</h2>
+        <p>I'm a minimalist and a DIY enthusiast at heart. I love tinkering with my computer, shaping my system until it feels just right — <strong>minimal, smooth, fast</strong>.</p>
+        <p>To me, minimalism isn't about deprivation — it's about removing the unnecessary and keeping only what matters. DIY isn't just about making things; it's the joy of creating and being in control.</p>
+        <p>This blog exists to share ideas, listen to voices, and grow together.</p>
+
+        <h2>📬 Contact</h2>
+        <p>Feel free to reach out:</p>
+        <p><a href="mailto:starsdusts@foxmail.com">starsdusts@foxmail.com</a></p>
+        {% endif %}
+    </div>
+
+    {% if config.comment %}
+    {% if config.comment.enable %}
+    <div class="post-comments">
+        <h2>{{ lang_config.comment_title }}</h2>
+        <div class="giscus" data-repo="{{ config.comment.repo }}" data-repo-id="{{ config.comment.repo_id }}" data-category="{{ config.comment.category }}" data-category-id="{{ config.comment.category_id }}" data-mapping="{{ config.comment.mapping }}" data-lang="{{ config.comment.lang }}">
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</article>
+{% endblock %}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ lang_config.title }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ lang_config.description }}{% endblock %}">
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/{{ lang }}/feed.xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" href="/avatar.svg" type="image/svg+xml">
+    <meta property="og:image" content="/avatar.svg">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="reading-progress"></div>
+    <header>
+        <nav>
+            <a href="/{{ lang }}/" class="site-title">{{ lang_config.title }}</a>
+            <div class="nav-links">
+                <a href="/{{ lang }}/">{{ lang_config.nav_home }}</a>
+                <a href="/{{ lang }}/tags">{{ lang_config.nav_tags }}</a>
+                <a href="/{{ lang }}/about/">{{ lang_config.nav_about }}</a>
+            </div>
+            <div class="search-box">
+                <input id="search-input" type="text" placeholder="{{ lang_config.nav_search }}..." autocomplete="off">
+                <div id="search-results" class="search-results"></div>
+            </div>
+        </nav>
+    </header>
+    <main>
+    {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; {{ now() | date(format="%Y") }} {{ config.author.name }}</p>
+    </footer>
+    <script src="/js/livereload.js"></script>
+    <script src="/js/search.js"></script>
+</body>
+</html>

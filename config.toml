@@ -1,0 +1,72 @@
+[site]
+languages = ["zh", "en"]
+default = "zh"
+
+[author]
+name = "Your Name"
+email = "your@email.com"
+
+[build]
+posts_per_page = 10
+include_drafts = true
+syntax_theme = "base16-ocean.dark"
+
+[languages.zh]
+title = "Stellaris Pulvis"
+description = "一个极简主义 DIY 爱好者的知识共享站"
+nav_home = "首页"
+nav_tags = "标签"
+nav_about = "关于"
+nav_search = "搜索文章"
+read_more = "阅读全文"
+tags_title = "标签"
+comment_title = "留言"
+pagination_prev = "上一页"
+pagination_next = "下一页"
+search_empty = "未找到相关文章"
+announcements_title = "公告"
+
+[[languages.zh.announcements]]
+title = "🚀 Stellaris Pulvis 启程"
+content = "星尘之下，分享每一个想法，倾听每一种声音，一起成长。"
+date = "2026-07"
+
+[[languages.zh.announcements]]
+title = "📝 持续更新中"
+content = "这里记录的是一切值得分享的——极简的实践、DIY 的乐趣、生活的思考。"
+date = "2026-07"
+
+[languages.en]
+title = "Stellaris Pulvis"
+description = "A minimalist DIY enthusiast sharing ideas and growing together"
+nav_home = "Home"
+nav_tags = "Tags"
+nav_about = "About"
+nav_search = "Search posts"
+read_more = "Read more"
+tags_title = "Tags"
+comment_title = "Comments"
+pagination_prev = "Previous"
+pagination_next = "Next"
+search_empty = "No results found"
+announcements_title = "Announcements"
+
+[[languages.en.announcements]]
+title = "🚀 Stellaris Pulvis Takes Off"
+content = "Beneath the stars, sharing ideas, listening to voices, growing together."
+date = "2026-07"
+
+[[languages.en.announcements]]
+title = "📝 Always Growing"
+content = "Everything worth sharing — minimalist practices, DIY delights, reflections on life."
+date = "2026-07"
+
+# giscus (optional)
+# [comment]
+# enable = true
+# repo = "owner/repo"
+# repo_id = "R_kgXXXXXXXXX"
+# category = "Announcements"
+# category_id = "DIC_kwXXXXXXXXX"
+# mapping = "pathname"
+# lang = "zh-CN"

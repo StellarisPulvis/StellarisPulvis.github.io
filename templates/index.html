@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ lang_config.title }}{% endblock %}
+{% block content %}
+<section class="hero">
+    <h1>{{ lang_config.title }}</h1>
+    <p class="description">{{ lang_config.description }}</p>
+</section>
+
+{% if lang_config.announcements %}
+<section class="announcement-bar">
+    {% for item in lang_config.announcements %}
+    <div class="announcement-item">
+        <div class="announcement-icon">{{ item.icon | default(value="📢") }}</div>
+        <div class="announcement-body">
+            <div class="announcement-title">{{ item.title }}</div>
+            <div class="announcement-content">{{ item.content }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+<div class="content-with-sidebar">
+    <section class="posts">
+    {% for post in posts %}
+        <article class="post-card">
+            <h2><a href="/{{ lang }}/posts/{{ post.slug }}/">{{ post.title }}</a></h2>
+            <div class="meta">
+                <time datetime="{{ post.date_iso }}">{{ post.date }}</time>
+                {% if post.tags %}
+                <div class="tags">
+                    {% for tag in post.tags %}
+                    <a href="/{{ lang }}/tags/{{ tag }}/" class="tag">{{ tag }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="summary">{{ post.summary_html | safe }}</div>
+            <a href="/{{ lang }}/posts/{{ post.slug }}/" class="read-more">{{ lang_config.read_more }} →</a>
+        </article>
+    {% endfor %}
+    </section>
+
+    {% if lang_config.announcements %}
+    <aside class="sidebar">
+        <div class="sidebar-section sidebar-announcements">
+            <h3 class="sidebar-title">📢 {{ lang_config.announcements_title }}</h3>
+            {% for item in lang_config.announcements %}
+            <div class="sidebar-announcement-item">
+                <div class="sidebar-announcement-icon">{{ item.icon | default(value="📢") }}</div>
+                <div class="sidebar-announcement-body">
+                    <div class="sidebar-announcement-title">{{ item.title }}</div>
+                    <div class="sidebar-announcement-content">{{ item.content }}</div>
+                    {% if item.date %}
+                    <div class="sidebar-announcement-date">{{ item.date }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </aside>
+    {% endif %}
+</div>
+
+{% if pagination %}
+<nav class="pagination">
+    {% if pagination.prev %}
+    <a href="{{ pagination.prev }}" class="prev">← {{ lang_config.pagination_prev }}</a>
+    {% endif %}
+    <span class="pages">{{ pagination.current }} / {{ pagination.total }}</span>
+    {% if pagination.next %}
+    <a href="{{ pagination.next }}" class="next">{{ lang_config.pagination_next }} →</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

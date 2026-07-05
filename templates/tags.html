@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ lang_config.tags_title }} - {{ lang_config.title }}{% endblock %}
+{% block content %}
+<section class="tags-page">
+    <h1>🏷️ {{ lang_config.tags_title }}</h1>
+    <div class="tags-cloud">
+    {% for tag in tags %}
+        <a href="/{{ lang }}/tags/{{ tag.name }}/" class="tag-cloud-item">
+            {{ tag.name }}
+            <span class="count">{{ tag.count }}</span>
+        </a>
+    {% endfor %}
+    </div>
+</section>
+{% endblock %}

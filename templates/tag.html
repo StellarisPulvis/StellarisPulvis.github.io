@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ lang_config.tags_title }}: {{ tag.name }} - {{ lang_config.title }}{% endblock %}
+{% block content %}
+<section class="tag-page">
+    <h1>🏷️ <span>{{ tag.name }}</span></h1>
+    <section class="posts">
+    {% for post in posts %}
+        <article class="post-card">
+            <h2><a href="/{{ lang }}/posts/{{ post.slug }}/">{{ post.title }}</a></h2>
+            <div class="meta">
+                <time datetime="{{ post.date_iso }}">{{ post.date }}</time>
+            </div>
+            <div class="summary">{{ post.summary_html | safe }}</div>
+        </article>
+    {% endfor %}
+    </section>
+</section>
+{% endblock %}
