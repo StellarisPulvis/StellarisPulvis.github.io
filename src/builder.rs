@@ -105,8 +105,16 @@ impl SiteBuilder {
         let lang_output = self.output_dir.join(lang);
         std::fs::create_dir_all(&lang_output)?;
 
-        let content_dir = self.content_dir.join(lang).join("posts");
-        let posts = self.load_posts(&content_dir)?;
+        // load posts from ALL language directories
+        let mut posts = Vec::new();
+        for l in &self.config.site.languages {
+            let content_dir = self.content_dir.join(l).join("posts");
+            if content_dir.exists() {
+                if let Ok(mut lang_posts) = self.load_posts(&content_dir) {
+                    posts.append(&mut lang_posts);
+                }
+            }
+        }
 
         let mut posts = posts;
         posts.sort_by(|a, b| b.front_matter.date.cmp(&a.front_matter.date));
@@ -146,20 +154,19 @@ impl SiteBuilder {
     }
 
     fn build_redirect(&self) -> Result<()> {
-        let languages = &self.config.site.languages;
-        let default = &self.config.site.default;
-
-        let cases: String = languages
-            .iter()
-            .map(|l| {
-                format!(
-                    "  if (lang.startsWith('{}')) {{ window.location.href = '/{}/'; }}",
-                    lang_code_to_bcp47(l),
-                    l
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
+        let mut links = Vec::new();
+        for lang in &self.config.site.languages {
+            let label = match lang.as_str() {
+                "zh" => "中文",
+                "en" => "English",
+                _ => lang,
+            };
+            links.push(format!(
+                r#"    <a href="/{lang}/" class="lang-link">{label}</a>"#,
+                lang = lang,
+                label = label
+            ));
+        }
 
         let html = format!(
             r#"<!DOCTYPE html>
@@ -167,18 +174,56 @@ impl SiteBuilder {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Redirecting...</title>
-<script>
-var lang = navigator.language || navigator.userLanguage || '';
-{}
-  window.location.href = '/{}/';
-</script>
+<title>{title}</title>
+<style>
+  body {{
+    font-family: system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: #faf6f0;
+    color: #3d3225;
+  }}
+  .wrapper {{
+    text-align: center;
+  }}
+  h1 {{
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+  }}
+  p {{
+    color: #8c7e6e;
+    margin-bottom: 2rem;
+  }}
+  .lang-link {{
+    display: inline-block;
+    margin: 0 0.5rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    background: #d4a373;
+    color: #fdfaf5;
+    text-decoration: none;
+    font-weight: 500;
+  }}
+  .lang-link:hover {{
+    background: #bc6c25;
+  }}
+</style>
 </head>
 <body>
-<p>Redirecting...</p>
+<div class="wrapper">
+  <h1>✦ {title}</h1>
+  <p>{desc}</p>
+  {links}
+</div>
 </body>
 </html>"#,
-            cases, default
+            title = "Stellaris Pulvis",
+            desc = "一个极简主义 DIY 爱好者的知识共享站",
+            links = links.join("\n")
         );
 
         std::fs::write(self.output_dir.join("index.html"), &html)?;
@@ -477,13 +522,7 @@ var lang = navigator.language || navigator.userLanguage || '';
     }
 }
 
-fn lang_code_to_bcp47(lang: &str) -> &str {
-    match lang {
-        "zh" => "zh",
-        "en" => "en",
-        _ => lang,
-    }
-}
+
 
 #[derive(Debug)]
 #[allow(dead_code)]
