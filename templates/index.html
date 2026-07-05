@@ -2,8 +2,37 @@
 {% block title %}{{ lang_config.title }}{% endblock %}
 {% block content %}
 <section class="hero">
-    <h1>{{ lang_config.title }}</h1>
-    <p class="description">{{ lang_config.description }}</p>
+    <div class="hero-text">
+        <h1>{{ lang_config.title }}</h1>
+        <p class="description">{{ lang_config.description }}</p>
+    </div>
+    <div class="hero-character">
+        <div class="character" id="site-character" role="img" aria-label="Site mascot">
+            <div class="character-face">
+                <div class="character-eyes">
+                    <div class="character-eye left-eye">
+                        <div class="eyeball">
+                            <div class="pupil"></div>
+                        </div>
+                    </div>
+                    <div class="character-eye right-eye">
+                        <div class="eyeball">
+                            <div class="pupil"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="character-mouth">
+                    <div class="mouth-shape"></div>
+                </div>
+                <div class="character-blush left-blush"></div>
+                <div class="character-blush right-blush"></div>
+            </div>
+            <div class="character-body">
+                <div class="body-star">✦</div>
+            </div>
+            <div class="character-zzz">Z</div>
+        </div>
+    </div>
 </section>
 
 <div class="content-with-sidebar">

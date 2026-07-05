@@ -205,6 +205,7 @@ draft: false
     <script src="/js/livereload.js"></script>
     <script src="/js/search.js"></script>
     <script src="/js/theme.js"></script>
+    <script src="/js/character.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded',function(){
       if(typeof katex==='undefined')return;
@@ -356,31 +357,63 @@ draft: false
 {% block title %}{{ lang_config.nav_about }} — {{ lang_config.title }}{% endblock %}
 {% block content %}
 <article class="post-full about-page">
-    <header>
-        <h1>{{ lang_config.nav_about }} {{ lang_config.title }}</h1>
-    </header>
-    <div class="content">
-        {% if lang == "zh" %}
-        <h2>✨ 名字的由来</h2>
-        <p><strong>Stellaris Pulvis</strong>，拉丁语意为「星尘」。</p>
-        <p>这个名字来源于《空洞骑士》中信仰者神龛里的一句话——<strong>「星星与尘土」</strong>。我们都是星尘。</p>
-        <p>这个博客便是这样一粒星尘——微小，却承载着值得被分享的光芒。</p>
-        <h2>🧑‍🚀 关于我</h2>
-        <p>极简主义者和深度 DIY 爱好者。喜欢把系统打磨成最符合心意的模样——<strong>极简、流畅、迅速</strong>。</p>
-        <p>建这个博客，是为了分享想法、倾听声音，和大家一起成长。</p>
-        <h2>📬 联系方式</h2>
-        <p><a href="mailto:starsdusts@foxmail.com">starsdusts@foxmail.com</a></p>
-        {% else %}
-        <h2>✨ The Story Behind the Name</h2>
-        <p><strong>Stellaris Pulvis</strong> — Latin for <strong>«Stardust»</strong>.</p>
-        <p>Inspired by a line from <em>Hollow Knight</em>: <strong>«Stars and Dust»</strong>. We are all made of stardust.</p>
-        <p>This blog is a speck of that dust — small, yet carrying light worth sharing.</p>
-        <h2>🧑‍🚀 About Me</h2>
-        <p>A minimalist and DIY enthusiast. Shaping my system until it feels just right — <strong>minimal, smooth, fast</strong>.</p>
-        <p>This blog exists to share ideas, listen to voices, and grow together.</p>
-        <h2>📬 Contact</h2>
-        <p><a href="mailto:starsdusts@foxmail.com">starsdusts@foxmail.com</a></p>
-        {% endif %}
+    <div class="about-layout">
+        <div class="about-character">
+            <div class="character" id="site-character" role="img" aria-label="Site mascot">
+                <div class="character-face">
+                    <div class="character-eyes">
+                        <div class="character-eye left-eye">
+                            <div class="eyeball">
+                                <div class="pupil"></div>
+                            </div>
+                        </div>
+                        <div class="character-eye right-eye">
+                            <div class="eyeball">
+                                <div class="pupil"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="character-mouth">
+                        <div class="mouth-shape"></div>
+                    </div>
+                    <div class="character-blush left-blush"></div>
+                    <div class="character-blush right-blush"></div>
+                </div>
+                <div class="character-body">
+                    <div class="body-star">✦</div>
+                </div>
+                <div class="character-zzz">Z</div>
+            </div>
+        </div>
+
+        <div class="about-content">
+            <header>
+                <h1>{{ lang_config.nav_about }} {{ lang_config.title }}</h1>
+            </header>
+            <div class="content">
+                {% if lang == "zh" %}
+                <h2>✨ 名字的由来</h2>
+                <p><strong>Stellaris Pulvis</strong>，拉丁语意为「星尘」。</p>
+                <p>这个名字来源于《空洞骑士》中信仰者神龛里的一句话——<strong>「星星与尘土」</strong>。我们都是星尘。</p>
+                <p>这个博客便是这样一粒星尘——微小，却承载着值得被分享的光芒。</p>
+                <h2>🧑‍🚀 关于我</h2>
+                <p>极简主义者和深度 DIY 爱好者。喜欢把系统打磨成最符合心意的模样——<strong>极简、流畅、迅速</strong>。</p>
+                <p>建这个博客，是为了分享想法、倾听声音，和大家一起成长。</p>
+                <h2>📬 联系方式</h2>
+                <p><a href="mailto:starsdusts@foxmail.com">starsdusts@foxmail.com</a></p>
+                {% else %}
+                <h2>✨ The Story Behind the Name</h2>
+                <p><strong>Stellaris Pulvis</strong> — Latin for <strong>«Stardust»</strong>.</p>
+                <p>Inspired by a line from <em>Hollow Knight</em>: <strong>«Stars and Dust»</strong>. We are all made of stardust.</p>
+                <p>This blog is a speck of that dust — small, yet carrying light worth sharing.</p>
+                <h2>🧑‍🚀 About Me</h2>
+                <p>A minimalist and DIY enthusiast. Shaping my system until it feels just right — <strong>minimal, smooth, fast</strong>.</p>
+                <p>This blog exists to share ideas, listen to voices, and grow together.</p>
+                <h2>📬 Contact</h2>
+                <p><a href="mailto:starsdusts@foxmail.com">starsdusts@foxmail.com</a></p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </article>
 {% endblock %}"#,
@@ -438,6 +471,9 @@ draft: false
 
     let js_theme = include_str!("../static/js/theme.js");
     std::fs::write(project_dir.join("static/js/theme.js"), js_theme)?;
+
+    let js_char = include_str!("../static/js/character.js");
+    std::fs::write(project_dir.join("static/js/character.js"), js_char)?;
 
     println!("✅ 博客项目已初始化: {}", project_dir.display());
     println!("运行 `cargo run -- serve` 启动开发服务器");

@@ -365,9 +365,17 @@ main {
 
 /* ---------- Hero ---------- */
 .hero {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
     padding: 60px 0 48px;
     animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+.hero-text {
+    flex: 1;
+    min-width: 0;
 }
 
 .hero h1 {
@@ -394,7 +402,7 @@ main {
     font-size: 1.15rem;
     font-weight: 400;
     max-width: 500px;
-    margin: 0 auto;
+    margin: 0;
 }
 
 /* ---------- Sidebar Layout ---------- */
@@ -973,11 +981,18 @@ main {
 }
 
 @media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 0 32px;
+    }
+    .hero .description {
+        margin: 0 auto;
+    }
     header { margin: 12px 12px 24px; top: 12px; }
     nav { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
     .post-card { padding: 20px; }
     .posts-grid { grid-template-columns: 1fr; }
-    .hero { padding: 40px 0 32px; }
     main { padding: 0 12px 24px; }
     .search-box { order: 3; width: 100%; }
     #search-input { width: 100%; }
@@ -990,4 +1005,345 @@ main {
     .nav-links a { padding: 6px 10px; font-size: 0.82rem; }
     .post-card h2 { font-size: 1.15rem; }
     .post-card { padding: 16px 18px; }
+}
+
+/* ---------- About Page Layout ---------- */
+.about-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.about-character {
+    flex-shrink: 0;
+    padding-top: 20px;
+}
+
+.about-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ---------- Character ---------- */
+.character {
+    position: relative;
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.character-face {
+    position: relative;
+    width: 130px;
+    height: 120px;
+    border-radius: 45% 55% 50% 50%;
+    background: linear-gradient(145deg, #fcd8a8, #f5b87e);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(212, 163, 115, 0.3);
+    transition: background var(--transition);
+    animation: charBreathe 3s ease-in-out infinite;
+}
+
+[data-theme="dark"] .character-face {
+    background: linear-gradient(145deg, #2d2b55, #1e1b4b);
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.12);
+}
+
+@keyframes charBreathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+.character-eyes {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.character-eye {
+    width: 30px;
+    height: 34px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+[data-theme="dark"] .character-eye {
+    background: #e0e7ff;
+}
+
+.eyeball {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.pupil {
+    width: 14px;
+    height: 14px;
+    background: #2d1b0e;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    transform: translate(var(--pupil-x, 0), var(--pupil-y, 0));
+}
+
+[data-theme="dark"] .pupil {
+    background: #1e1b4b;
+}
+
+/* Eye highlight */
+.pupil::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 5px;
+    height: 5px;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0.8;
+}
+
+/* Blink */
+.character.state-blink .character-eye {
+    transform: scaleY(0.1);
+}
+
+/* Sleep - peaceful closed eyes (gentle curve) */
+.character.state-sleep .character-eye {
+    background: transparent;
+    box-shadow: none;
+    width: 26px;
+    height: 0;
+    padding-top: 10px;
+    border-bottom: 3px solid #2d1b0e;
+    border-radius: 0 0 50% 50%;
+    transform: none;
+    transition: none;
+}
+
+[data-theme="dark"] .character.state-sleep .character-eye {
+    border-bottom-color: #c7d2fe;
+}
+
+.character.state-sleep .eyeball,
+.character.state-sleep .pupil {
+    display: none;
+}
+
+/* Sleepy - heavy eyelids */
+.character.state-sleepy .character-eye {
+    transform: scaleY(0.5);
+}
+
+/* Smile - squinty happy eyes (crescent) */
+.character.state-smile .character-eye {
+    transform: scaleY(0.35);
+    border-radius: 0;
+    border-bottom: 3px solid #2d1b0e;
+    background: transparent;
+    box-shadow: none;
+    height: 3px;
+    width: 26px;
+}
+
+[data-theme="dark"] .character.state-smile .character-eye {
+    border-bottom-color: #c7d2fe;
+}
+
+.character.state-smile .eyeball,
+.character.state-smile .pupil {
+    display: none;
+}
+
+/* Wink */
+.character.state-wink .right-eye {
+    transform: scaleY(0.1);
+}
+
+/* Mouth */
+.character-mouth {
+    margin-top: 4px;
+    height: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mouth-shape {
+    width: 12px;
+    height: 3px;
+    background: #2d1b0e;
+    border-radius: 2px;
+    transition: all 0.25s ease;
+}
+
+[data-theme="dark"] .mouth-shape {
+    background: #c7d2fe;
+}
+
+.character.state-smile .mouth-shape {
+    width: 16px;
+    height: 8px;
+    border-radius: 0 0 10px 10px;
+    background: #2d1b0e;
+}
+
+[data-theme="dark"] .character.state-smile .mouth-shape {
+    background: #c7d2fe;
+}
+
+.character.state-open .mouth-shape {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* Blush */
+.character-blush {
+    position: absolute;
+    top: 55%;
+    width: 24px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(235, 130, 100, 0.25);
+    transition: opacity 0.4s ease;
+    opacity: 0.5;
+}
+
+[data-theme="dark"] .character-blush {
+    background: rgba(165, 130, 235, 0.2);
+}
+
+.left-blush { left: 8px; }
+.right-blush { right: 8px; }
+
+.character.state-smile .character-blush {
+    opacity: 0.9;
+    transform: scale(1.2);
+}
+
+.character.state-sleepy .character-blush {
+    opacity: 0.7;
+}
+
+/* Body */
+.character-body {
+    width: 70px;
+    height: 30px;
+    background: linear-gradient(145deg, #fcd8a8, #f5b87e);
+    border-radius: 0 0 50% 50%;
+    margin-top: -4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(212, 163, 115, 0.2);
+    transition: background var(--transition);
+}
+
+[data-theme="dark"] .character-body {
+    background: linear-gradient(145deg, #2d2b55, #1e1b4b);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+}
+
+.body-star {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.6);
+    animation: starSpin 4s linear infinite;
+}
+
+[data-theme="dark"] .body-star {
+    color: rgba(199, 210, 254, 0.5);
+}
+
+@keyframes starSpin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Zzz */
+.character-zzz {
+    position: absolute;
+    top: -15px;
+    right: -5px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--accent-1);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+[data-theme="dark"] .character-zzz {
+    color: #a5b4fc;
+}
+
+.character.state-sleep .character-zzz,
+.character.state-sleepy .character-zzz {
+    opacity: 1;
+    animation: zzzFloat 1.8s ease-in-out infinite;
+}
+
+@keyframes zzzFloat {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+    50% { transform: translateY(-12px) scale(1.4); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+    .about-layout {
+        flex-direction: column;
+        align-items: center;
+    }
+    .about-character {
+        padding-top: 0;
+        margin-bottom: 20px;
+    }
+    .character {
+        width: 130px;
+    }
+    .character-face {
+        width: 110px;
+        height: 105px;
+    }
+    .character-eye {
+        width: 26px;
+        height: 30px;
+    }
+    .eyeball {
+        width: 18px;
+        height: 18px;
+    }
+    .pupil {
+        width: 11px;
+        height: 11px;
+    }
+    .character-eyes {
+        gap: 12px;
+    }
+    .character-body {
+        width: 58px;
+        height: 26px;
+    }
+    .character-blush {
+        width: 20px;
+        height: 11px;
+    }
+    .character.state-smile .character-eye {
+        width: 22px;
+    }
+    .character.state-sleep .character-eye {
+        width: 22px;
+        height: 12px;
+    }
 }
