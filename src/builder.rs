@@ -486,6 +486,7 @@ fn lang_code_to_bcp47(lang: &str) -> &str {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct BuildSummary {
     pub posts: usize,
     pub tags: usize,
