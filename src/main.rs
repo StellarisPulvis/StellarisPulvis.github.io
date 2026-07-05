@@ -202,9 +202,6 @@ draft: false
     <main>
     {% block content %}{% endblock %}
     </main>
-    <footer>
-        <p>&copy; {{ now() | date(format="%Y") }} {{ config.author.name }}</p>
-    </footer>
     <script src="/js/livereload.js"></script>
     <script src="/js/search.js"></script>
     <script src="/js/theme.js"></script>
