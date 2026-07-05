@@ -59,8 +59,7 @@ async fn main() -> Result<()> {
 
 fn cmd_init(project_dir: &PathBuf) -> Result<()> {
     let dirs = [
-        "content/zh/posts",
-        "content/en/posts",
+        "content/posts",
         "templates",
         "static/css",
         "static/js",
@@ -139,11 +138,11 @@ date = "2026-07"
 
     // 中文示例文章
     std::fs::write(
-        project_dir.join("content/zh/posts/hello-world.md"),
+        project_dir.join("content/posts/hello-world.md"),
         r#"---
 title: "星尘之下"
 date: 2024-01-01
-tags: ["随笔"]
+tags: ["随笔", "essay"]
 draft: false
 ---
 
@@ -156,28 +155,6 @@ draft: false
 每一颗种子都需要阳光和对话才能发芽。欢迎你留下你的声音，我们一起讨论，一起进步。
 
 > 星辰之下，尘埃之上。分享，交流，共同成长。
-"#,
-    )?;
-
-    // English sample post
-    std::fs::write(
-        project_dir.join("content/en/posts/hello-world.md"),
-        r#"---
-title: "Under the Stardust"
-date: 2024-01-01
-tags: ["essay"]
-draft: false
----
-
-Welcome to Stellaris Pulvis.
-
-This is a speck of stardust fallen from the sky — a patch of soil where we grow together.
-
-Here we talk about minimalist practices, the joy of DIY, good books we've read, paths we've walked, and the ideas worth sharing.
-
-Every seed needs sunlight and conversation to sprout. So your voice is welcome here — let's discuss, share, and grow together.
-
-> Beneath the stars, above the dust. Share, exchange, grow together.
 "#,
     )?;
 

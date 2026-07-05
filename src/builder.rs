@@ -81,10 +81,6 @@ impl SiteBuilder {
 
         for lang in &self.config.site.languages {
             if let Some(lang_config) = self.config.languages.get(lang) {
-                let lang_content = self.content_dir.join(lang).join("posts");
-                if !lang_content.exists() {
-                    continue;
-                }
                 let summary = self.build_language(lang, lang_config)?;
                 summaries.push((lang.clone(), summary));
             }
@@ -105,18 +101,14 @@ impl SiteBuilder {
         let lang_output = self.output_dir.join(lang);
         std::fs::create_dir_all(&lang_output)?;
 
-        // load posts from ALL language directories
-        let mut posts = Vec::new();
-        for l in &self.config.site.languages {
-            let content_dir = self.content_dir.join(l).join("posts");
-            if content_dir.exists() {
-                if let Ok(mut lang_posts) = self.load_posts(&content_dir) {
-                    posts.append(&mut lang_posts);
-                }
-            }
-        }
+        // load all posts from unified content/posts/
+        let content_dir = self.content_dir.join("posts");
+        let mut posts = if content_dir.exists() {
+            self.load_posts(&content_dir)?
+        } else {
+            Vec::new()
+        };
 
-        let mut posts = posts;
         posts.sort_by(|a, b| b.front_matter.date.cmp(&a.front_matter.date));
 
         let rendered_posts: Vec<Post> = posts
