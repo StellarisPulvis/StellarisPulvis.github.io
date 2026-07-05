@@ -1,7 +1,7 @@
 ---
-title: "星尘之下"
-date: 2024-01-01
-tags: ["随笔"]
+title: "星尘之下(Under the Stardust)"
+date: 2026-07-05
+tags: ["随笔", "essay"]
 draft: false
 ---
 
@@ -15,3 +15,17 @@ draft: false
 
 > 星辰之下，尘埃之上。
 > 分享，交流，共同成长。
+
+---
+
+Welcome to Stellaris Pulvis.
+
+This is a speck of stardust fallen from the sky — a patch of soil where we grow together.
+
+Here we talk about minimalist practices, the joy of DIY, good books we've read, paths we've walked, and the ideas worth sharing.
+
+Every seed needs sunlight and conversation to sprout. So your voice is welcome here — let's discuss, share, and grow together.
+
+>  Beneath the stars, above the dust.
+>
+> Share, exchange, grow together. 
