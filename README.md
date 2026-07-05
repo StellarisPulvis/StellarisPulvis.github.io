@@ -135,6 +135,35 @@ lang = "zh-CN"
 
 编辑 `templates/about.html`，目前通过 `{% if lang == "zh" %}` 区分中英文内容。
 
+## 插入图片
+
+图片放在 `static/images/` 目录下，构建时自动复制到输出目录。
+
+```
+static/
+  images/
+    photo.jpg       ← 放这里
+    diagram.png
+```
+
+文章中引用：
+
+```markdown
+![图片描述](/images/photo.jpg)
+```
+
+支持子目录归类：
+
+```
+static/images/2026/ workshop.jpg
+```
+
+```markdown
+![组装过程](/images/2026/workshop.jpg)
+```
+
+> 注意：路径以 `/` 开头，指向站点根目录。
+
 ## 提示
 
 - 使用 `cargo run -- init` 初始化新项目
