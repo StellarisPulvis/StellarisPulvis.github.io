@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use std::sync::mpsc;
 use std::thread;
 
+use std::os::unix::fs::PermissionsExt;
 use std::sync::Arc;
 use eframe::egui::{self, CornerRadius, FontData, FontDefinitions, FontFamily, Frame};
 
@@ -20,10 +21,10 @@ struct PostInfo {
     lang: String,
 }
 
-#[allow(dead_code)]
 enum Msg {
     BuildDone(std::time::Duration),
     BuildError(String),
+    DeployStarted,
     DeployDone,
     DeployError(String),
 }
@@ -278,6 +279,48 @@ draft: true
         });
     }
 
+    /// build first, then automatically deploy when build succeeds
+    fn build_then_deploy(&mut self) {
+        if self.building || self.deploying {
+            return;
+        }
+        self.building = true;
+        self.status = self.t("构建中...", "Building...");
+        let project_dir = self.project_dir.clone();
+        let tx = self.msg_tx.clone();
+        thread::spawn(move || {
+            let start = std::time::Instant::now();
+            let config_path = project_dir.join("config.toml");
+            match Config::load(&config_path) {
+                Ok(config) => {
+                    let mut builder = match crate::builder::SiteBuilder::new(&project_dir, config)
+                    {
+                        Ok(b) => b,
+                        Err(e) => {
+                            let _ = tx.send(Msg::BuildError(format!("init failed: {}", e)));
+                            return;
+                        }
+                    };
+                    if let Err(e) = builder.build_all() {
+                        let _ = tx.send(Msg::BuildError(format!("build failed: {}", e)));
+                        return;
+                    }
+                }
+                Err(e) => {
+                    let _ = tx.send(Msg::BuildError(format!("config failed: {}", e)));
+                    return;
+                }
+            }
+            // build succeeded, now deploy
+            tx.send(Msg::BuildDone(start.elapsed())).ok();
+            tx.send(Msg::DeployStarted).ok();
+            // small pause so UI shows both transitions
+            std::thread::sleep(std::time::Duration::from_millis(300));
+
+            Self::run_deploy(&project_dir, &tx);
+        });
+    }
+
     fn deploy(&mut self) {
         if self.deploying {
             return;
@@ -287,47 +330,69 @@ draft: true
         let project_dir = self.project_dir.clone();
         let tx = self.msg_tx.clone();
         thread::spawn(move || {
-            let add = std::process::Command::new("git")
-                .args(["-C", &project_dir.to_string_lossy(), "add", "-A"])
-                .output();
-            if add.is_err() || !add.unwrap().status.success() {
-                let _ = tx.send(Msg::DeployError("git add failed".to_string()));
-                return;
-            }
-
-            let now = chrono::Local::now().format("%Y-%m-%d %H:%M");
-            let commit = std::process::Command::new("git")
-                .args([
-                    "-C",
-                    &project_dir.to_string_lossy(),
-                    "commit",
-                    "--allow-empty",
-                    "-m",
-                    &format!("deploy: auto update {}", now),
-                ])
-                .output();
-            if commit.is_err() {
-                let _ = tx.send(Msg::DeployError("git commit failed".to_string()));
-                return;
-            }
-
-            let push = std::process::Command::new("git")
-                .args(["-C", &project_dir.to_string_lossy(), "push"])
-                .output();
-
-            match push {
-                Ok(o) if o.status.success() => {
-                    let _ = tx.send(Msg::DeployDone);
-                }
-                Ok(o) => {
-                    let stderr = String::from_utf8_lossy(&o.stderr);
-                    let _ = tx.send(Msg::DeployError(format!("git push failed: {}", stderr)));
-                }
-                Err(e) => {
-                    let _ = tx.send(Msg::DeployError(format!("git push failed: {}", e)));
-                }
-            }
+            Self::run_deploy(&project_dir, &tx);
         });
+    }
+
+    fn run_deploy(project_dir: &PathBuf, tx: &mpsc::Sender<Msg>) {
+        let token = std::env::var("GITHUB_TOKEN")
+            .or_else(|_| std::env::var("GH_TOKEN"))
+            .ok();
+
+        // build credential helper that reads from env var
+        let askpass = if let Some(ref t) = token {
+            let script = format!(
+                "#!/bin/sh\necho '{}'\n",
+                t
+            );
+            let path = std::env::temp_dir().join("stellaris-askpass.sh");
+            if std::fs::write(&path, &script).is_ok() {
+                    let _ = std::fs::set_permissions(&path, PermissionsExt::from_mode(0o755));
+                Some(path)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        let mut cmd = std::process::Command::new("git");
+        cmd.args(["-C", &project_dir.to_string_lossy(), "add", "-A"]);
+        if cmd.output().map_or(true, |o| !o.status.success()) {
+            let _ = tx.send(Msg::DeployError("git add failed".to_string()));
+            return;
+        }
+
+        let now = chrono::Local::now().format("%Y-%m-%d %H:%M");
+        let mut cmd = std::process::Command::new("git");
+        cmd.args([
+            "-C",
+            &project_dir.to_string_lossy(),
+            "commit",
+            "--allow-empty",
+            "-m",
+            &format!("deploy: auto update {}", now),
+        ]);
+        let _ = cmd.output(); // commit may fail if nothing to commit, that's ok
+
+        let mut push = std::process::Command::new("git");
+        push.args(["-C", &project_dir.to_string_lossy(), "push"]);
+        if let Some(ref askpass) = askpass {
+            push.env("GIT_ASKPASS", askpass);
+        }
+
+        match push.output() {
+            Ok(o) if o.status.success() => {
+                let _ = tx.send(Msg::DeployDone);
+            }
+            Ok(o) => {
+                let stderr = String::from_utf8_lossy(&o.stderr);
+                let _ = tx.send(Msg::DeployError(format!("git push failed: {}", stderr)));
+            }
+            Err(e) => {
+                let _ = tx.send(Msg::DeployError(format!("git push failed: {}", e)));
+            }
+        }
     }
 
     fn process_messages(&mut self) {
@@ -340,6 +405,10 @@ draft: true
                         self.t("✅ 构建完成，耗时", "✅ Build done in"),
                         dur
                     );
+                }
+                Msg::DeployStarted => {
+                    self.deploying = true;
+                    self.status = self.t("部署中...", "Deploying...");
                 }
                 Msg::BuildError(e) => {
                     self.building = false;
@@ -533,9 +602,11 @@ draft: true
                     self.build_site();
                 }
 
-                if ui.add_enabled(!self.building && !self.deploying, egui::Button::new(self.t("🚀 构建 + 部署", "🚀 Build + Deploy"))).clicked() {
-                    self.build_site();
+                if ui.add_enabled(!self.deploying, egui::Button::new(self.t("🚀 部署", "🚀 Deploy"))).clicked() {
                     self.deploy();
+                }
+                if ui.add_enabled(!self.building && !self.deploying, egui::Button::new(self.t("⚡ 构建 + 🚀 部署", "⚡ Build + 🚀 Deploy"))).clicked() {
+                    self.build_then_deploy();
                 }
             });
 
