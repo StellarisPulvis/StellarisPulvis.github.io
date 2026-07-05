@@ -18,6 +18,8 @@ draft: false
 
 ---
 
+![Stars and Dust](/images/stars_and_dust.png)
+
 Welcome to Stellaris Pulvis.
 
 This is a speck of stardust fallen from the sky — a patch of soil where we grow together.
