@@ -4,6 +4,7 @@ use std::time::Instant;
 
 use anyhow::{Context as AnyhowContext, Result};
 use glob::glob;
+use serde_json::json;
 use tera::Context;
 
 use crate::config::{Config, LanguageConfig};
@@ -253,6 +254,27 @@ var lang = navigator.language || navigator.userLanguage || '';
         let total_pages = (posts.len() + per_page - 1) / per_page;
         let prefix = format!("/{}/", lang);
 
+        // Compute stats for the index page
+        let mut tag_counts: HashMap<String, usize> = HashMap::new();
+        let mut total_words = 0usize;
+        for post in posts {
+            total_words += post.word_count;
+            for tag in &post.tags {
+                *tag_counts.entry(tag.clone()).or_default() += 1;
+            }
+        }
+        let mut all_tags: Vec<TagInfo> = tag_counts
+            .into_iter()
+            .map(|(name, count)| TagInfo { name, count })
+            .collect();
+        all_tags.sort_by(|a, b| a.name.cmp(&b.name));
+
+        let stats = json!({
+            "total_posts": posts.len(),
+            "total_tags": all_tags.len(),
+            "total_words": total_words,
+        });
+
         for page_num in 0..total_pages.max(1) {
             let start = page_num * per_page;
             let end = (start + per_page).min(posts.len());
@@ -267,6 +289,8 @@ var lang = navigator.language || navigator.userLanguage || '';
             context.insert("lang", lang);
             context.insert("config", &self.config);
             context.insert("posts", page_posts);
+            context.insert("stats", &stats);
+            context.insert("all_tags", &all_tags);
 
             if total_pages > 1 {
                 let pagination = PaginationInfo {

@@ -25,6 +25,10 @@ pagination_prev = "上一页"
 pagination_next = "下一页"
 search_empty = "未找到相关文章"
 announcements_title = "公告"
+stats_posts = "文章"
+stats_tags = "标签"
+stats_words = "字数"
+no_posts = "还没有文章，敬请期待"
 
 [[languages.zh.announcements]]
 title = "🚀 Stellaris Pulvis 启程"
@@ -50,6 +54,10 @@ pagination_prev = "Previous"
 pagination_next = "Next"
 search_empty = "No results found"
 announcements_title = "Announcements"
+stats_posts = "Posts"
+stats_tags = "Tags"
+stats_words = "Words"
+no_posts = "No posts yet. Stay tuned!"
 
 [[languages.en.announcements]]
 title = "🚀 Stellaris Pulvis Takes Off"

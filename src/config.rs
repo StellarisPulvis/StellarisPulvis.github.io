@@ -40,6 +40,14 @@ pub struct LanguageConfig {
     pub search_empty: String,
     #[serde(default = "default_announcements_title")]
     pub announcements_title: String,
+    #[serde(default)]
+    pub stats_posts: String,
+    #[serde(default)]
+    pub stats_tags: String,
+    #[serde(default)]
+    pub stats_words: String,
+    #[serde(default)]
+    pub no_posts: String,
     pub footer_copyright: Option<String>,
     #[serde(default)]
     pub announcements: Vec<Announcement>,

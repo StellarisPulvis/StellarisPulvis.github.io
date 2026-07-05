@@ -6,23 +6,42 @@
     <p class="description">{{ lang_config.description }}</p>
 </section>
 
+<section class="stats-bar">
+    <div class="stat-item">
+        <span class="stat-icon">📝</span>
+        <span class="stat-value">{{ stats.total_posts }}</span>
+        <span class="stat-label">{{ lang_config.stats_posts }}</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-icon">🏷️</span>
+        <span class="stat-value">{{ stats.total_tags }}</span>
+        <span class="stat-label">{{ lang_config.stats_tags }}</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-icon">📄</span>
+        <span class="stat-value">{{ stats.total_words }}</span>
+        <span class="stat-label">{{ lang_config.stats_words }}</span>
+    </div>
+</section>
+
 {% if lang_config.announcements %}
-<section class="announcement-bar">
+<div class="floating-toasts">
     {% for item in lang_config.announcements %}
-    <div class="announcement-item">
-        <div class="announcement-icon">{{ item.icon | default(value="📢") }}</div>
-        <div class="announcement-body">
-            <div class="announcement-title">{{ item.title }}</div>
-            <div class="announcement-content">{{ item.content }}</div>
+    <div class="toast" data-toast-id="{{ loop.index }}">
+        <div class="toast-icon">{{ item.icon | default(value="📢") }}</div>
+        <div class="toast-body">
+            <div class="toast-title">{{ item.title }}</div>
+            <div class="toast-content">{{ item.content }}</div>
         </div>
+        <button class="toast-close" aria-label="Close">✕</button>
     </div>
     {% endfor %}
-</section>
+</div>
 {% endif %}
 
-<div class="content-with-sidebar">
-    <section class="posts">
-    {% for post in posts %}
+<section class="posts-grid">
+    {% if posts | length > 0 %}
+        {% for post in posts %}
         <article class="post-card">
             <h2><a href="/{{ lang }}/posts/{{ post.slug }}/">{{ post.title }}</a></h2>
             <div class="meta">
@@ -38,29 +57,28 @@
             <div class="summary">{{ post.summary_html | safe }}</div>
             <a href="/{{ lang }}/posts/{{ post.slug }}/" class="read-more">{{ lang_config.read_more }} →</a>
         </article>
-    {% endfor %}
-    </section>
-
-    {% if lang_config.announcements %}
-    <aside class="sidebar">
-        <div class="sidebar-section sidebar-announcements">
-            <h3 class="sidebar-title">📢 {{ lang_config.announcements_title }}</h3>
-            {% for item in lang_config.announcements %}
-            <div class="sidebar-announcement-item">
-                <div class="sidebar-announcement-icon">{{ item.icon | default(value="📢") }}</div>
-                <div class="sidebar-announcement-body">
-                    <div class="sidebar-announcement-title">{{ item.title }}</div>
-                    <div class="sidebar-announcement-content">{{ item.content }}</div>
-                    {% if item.date %}
-                    <div class="sidebar-announcement-date">{{ item.date }}</div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </aside>
+        {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🌌</div>
+        <p>{{ lang_config.no_posts }}</p>
+    </div>
     {% endif %}
-</div>
+</section>
+
+{% if all_tags | length > 0 %}
+<section class="home-tags">
+    <h2 class="section-title">{{ lang_config.tags_title }}</h2>
+    <div class="tags-cloud">
+        {% for tag in all_tags %}
+        <a href="/{{ lang }}/tags/{{ tag.name }}/" class="tag-cloud-item">
+            {{ tag.name }}
+            <span class="count">{{ tag.count }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 
 {% if pagination %}
 <nav class="pagination">
