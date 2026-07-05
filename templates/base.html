@@ -52,15 +52,6 @@
         }catch(e){el.textContent='Error: '+e.message;}
       });
     });
-    document.querySelectorAll('.toast').forEach(function(el){
-      var id=el.dataset.toastId;
-      if(id&&localStorage.getItem('toast-'+id)==='dismissed'){el.style.display='none';return;}
-      el.querySelector('.toast-close').addEventListener('click',function(){
-        el.classList.add('toast-out');
-        if(id)localStorage.setItem('toast-'+id,'dismissed');
-        setTimeout(function(){el.style.display='none';},350);
-      });
-    });
     </script>
 </body>
 </html>

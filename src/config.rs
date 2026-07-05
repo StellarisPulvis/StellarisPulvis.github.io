@@ -48,6 +48,8 @@ pub struct LanguageConfig {
     pub stats_words: String,
     #[serde(default)]
     pub no_posts: String,
+    #[serde(default)]
+    pub stats_title: String,
     pub footer_copyright: Option<String>,
     #[serde(default)]
     pub announcements: Vec<Announcement>,

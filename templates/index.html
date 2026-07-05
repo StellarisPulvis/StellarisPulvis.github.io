@@ -6,65 +6,72 @@
     <p class="description">{{ lang_config.description }}</p>
 </section>
 
-<section class="stats-bar">
-    <div class="stat-item">
-        <span class="stat-icon">📝</span>
-        <span class="stat-value">{{ stats.total_posts }}</span>
-        <span class="stat-label">{{ lang_config.stats_posts }}</span>
-    </div>
-    <div class="stat-item">
-        <span class="stat-icon">🏷️</span>
-        <span class="stat-value">{{ stats.total_tags }}</span>
-        <span class="stat-label">{{ lang_config.stats_tags }}</span>
-    </div>
-    <div class="stat-item">
-        <span class="stat-icon">📄</span>
-        <span class="stat-value">{{ stats.total_words }}</span>
-        <span class="stat-label">{{ lang_config.stats_words }}</span>
-    </div>
-</section>
-
-{% if lang_config.announcements %}
-<div class="floating-toasts">
-    {% for item in lang_config.announcements %}
-    <div class="toast" data-toast-id="{{ loop.index }}">
-        <div class="toast-icon">{{ item.icon | default(value="📢") }}</div>
-        <div class="toast-body">
-            <div class="toast-title">{{ item.title }}</div>
-            <div class="toast-content">{{ item.content }}</div>
-        </div>
-        <button class="toast-close" aria-label="Close">✕</button>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<section class="posts-grid">
-    {% if posts | length > 0 %}
-        {% for post in posts %}
-        <article class="post-card">
-            <h2><a href="/{{ lang }}/posts/{{ post.slug }}/">{{ post.title }}</a></h2>
-            <div class="meta">
-                <time datetime="{{ post.date_iso }}">{{ post.date }}</time>
-                {% if post.tags %}
-                <div class="tags">
-                    {% for tag in post.tags %}
-                    <a href="/{{ lang }}/tags/{{ tag }}/" class="tag">{{ tag }}</a>
-                    {% endfor %}
+<div class="content-with-sidebar">
+    <section class="posts-grid">
+        {% if posts | length > 0 %}
+            {% for post in posts %}
+            <article class="post-card">
+                <h2><a href="/{{ lang }}/posts/{{ post.slug }}/">{{ post.title }}</a></h2>
+                <div class="meta">
+                    <time datetime="{{ post.date_iso }}">{{ post.date }}</time>
+                    {% if post.tags %}
+                    <div class="tags">
+                        {% for tag in post.tags %}
+                        <a href="/{{ lang }}/tags/{{ tag }}/" class="tag">{{ tag }}</a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
+                <div class="summary">{{ post.summary_html | safe }}</div>
+                <a href="/{{ lang }}/posts/{{ post.slug }}/" class="read-more">{{ lang_config.read_more }} →</a>
+            </article>
+            {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🌌</div>
+            <p>{{ lang_config.no_posts }}</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <aside class="sidebar">
+        <div class="sidebar-widget sidebar-stats">
+            <h3 class="sidebar-widget-title">{{ lang_config.stats_title }}</h3>
+            <div class="sidebar-stats-list">
+                <div class="sidebar-stat-item">
+                    <span class="sidebar-stat-icon">📝</span>
+                    <span class="sidebar-stat-value">{{ stats.total_posts }}</span>
+                    <span class="sidebar-stat-label">{{ lang_config.stats_posts }}</span>
+                </div>
+                <div class="sidebar-stat-item">
+                    <span class="sidebar-stat-icon">🏷️</span>
+                    <span class="sidebar-stat-value">{{ stats.total_tags }}</span>
+                    <span class="sidebar-stat-label">{{ lang_config.stats_tags }}</span>
+                </div>
+                <div class="sidebar-stat-item">
+                    <span class="sidebar-stat-icon">📄</span>
+                    <span class="sidebar-stat-value">{{ stats.total_words }}</span>
+                    <span class="sidebar-stat-label">{{ lang_config.stats_words }}</span>
+                </div>
             </div>
-            <div class="summary">{{ post.summary_html | safe }}</div>
-            <a href="/{{ lang }}/posts/{{ post.slug }}/" class="read-more">{{ lang_config.read_more }} →</a>
-        </article>
-        {% endfor %}
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-icon">🌌</div>
-        <p>{{ lang_config.no_posts }}</p>
-    </div>
-    {% endif %}
-</section>
+        </div>
+
+        {% if lang_config.announcements %}
+        <div class="sidebar-widget sidebar-announcements">
+            <h3 class="sidebar-widget-title">{{ lang_config.announcements_title }}</h3>
+            {% for item in lang_config.announcements %}
+            <div class="sidebar-announcement-item">
+                <div class="sidebar-announcement-icon">{{ item.icon | default(value="📢") }}</div>
+                <div class="sidebar-announcement-body">
+                    <div class="sidebar-announcement-title">{{ item.title }}</div>
+                    <div class="sidebar-announcement-content">{{ item.content }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </aside>
+</div>
 
 {% if all_tags | length > 0 %}
 <section class="home-tags">

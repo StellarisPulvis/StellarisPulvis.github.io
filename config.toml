@@ -29,6 +29,7 @@ stats_posts = "文章"
 stats_tags = "标签"
 stats_words = "字数"
 no_posts = "还没有文章，敬请期待"
+stats_title = "统计"
 
 [[languages.zh.announcements]]
 title = "🚀 Stellaris Pulvis 启程"
@@ -58,6 +59,7 @@ stats_posts = "Posts"
 stats_tags = "Tags"
 stats_words = "Words"
 no_posts = "No posts yet. Stay tuned!"
+stats_title = "Stats"
 
 [[languages.en.announcements]]
 title = "🚀 Stellaris Pulvis Takes Off"
