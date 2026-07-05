@@ -37,43 +37,50 @@ pub fn run(project_dir: &PathBuf) {
 
     let app = StellarisApp::new(project_dir.clone());
 
-    let font_paths = [
-        "/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",
-        "/usr/share/fonts/todesk/NotoSansCJK-Regular.ttc",
-    ];
-
-    let mut font_path: Option<&str> = None;
-    for p in &font_paths {
-        if std::path::Path::new(p).exists() {
-            font_path = Some(p);
-            break;
+    let bundled = project_dir.join("fonts/NotoSansSC.ttf");
+    if !bundled.exists() {
+        std::fs::create_dir_all(project_dir.join("fonts")).ok();
+        let url = "https://github.com/google/fonts/raw/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf";
+        let output = std::process::Command::new("curl")
+            .args(["-sL", "-o", &bundled.to_string_lossy(), url])
+            .output();
+        if output.is_err() || !output.unwrap().status.success() {
+            let _ = std::fs::remove_file(&bundled);
         }
     }
+    let font_path = if bundled.exists() { Some(bundled) } else { None };
 
     let _ = eframe::run_native(
         "Stellaris Pulvis",
         options,
         Box::new(move |cc| {
-            if let Some(path) = font_path {
+            if let Some(ref path) = font_path {
                 if let Ok(font_bytes) = std::fs::read(path) {
-                    let mut fonts = FontDefinitions::empty();
+                    let mut fonts = FontDefinitions::default();
                     fonts.font_data.insert(
                         "cjk".to_string(),
                         Arc::new(FontData::from_owned(font_bytes)),
                     );
-                    if let Some(families) = fonts.families.get_mut(&FontFamily::Proportional) {
-                        families.insert(0, "cjk".to_string());
-                    }
+                    fonts.families
+                        .entry(FontFamily::Proportional)
+                        .or_insert_with(Vec::new)
+                        .push("cjk".to_string());
                     fonts.families
                         .entry(FontFamily::Monospace)
                         .or_insert_with(Vec::new)
-                        .insert(0, "cjk".to_string());
+                        .push("cjk".to_string());
                     cc.egui_ctx.set_fonts(fonts);
                 }
             }
             Ok(Box::new(app))
         }),
     );
+}
+
+#[derive(Clone, Copy, PartialEq)]
+enum UiLang {
+    Zh,
+    En,
 }
 
 struct StellarisApp {
@@ -90,7 +97,7 @@ struct StellarisApp {
     new_post_lang: String,
     show_new_post: bool,
     filter_drafts: bool,
-    filter_lang: String,
+    ui_lang: UiLang,
 }
 
 impl StellarisApp {
@@ -102,18 +109,26 @@ impl StellarisApp {
             config: None,
             msg_rx: rx,
             msg_tx: tx,
-            status: "就绪".to_string(),
+            status: String::new(),
             building: false,
             deploying: false,
             new_post_title: String::new(),
             new_post_lang: "zh".to_string(),
             show_new_post: false,
             filter_drafts: true,
-            filter_lang: "all".to_string(),
+            ui_lang: UiLang::Zh,
         };
+        app.status = app.t("就绪", "Ready");
         app.load_config();
         app.load_posts();
         app
+    }
+
+    fn t(&self, zh: &str, en: &str) -> String {
+        match self.ui_lang {
+            UiLang::Zh => zh.to_string(),
+            UiLang::En => en.to_string(),
+        }
     }
 
     fn load_config(&mut self) {
@@ -177,7 +192,7 @@ impl StellarisApp {
                 let _ = std::fs::remove_file(&path);
             }
             self.load_posts();
-            self.status = format!("已删除: {}", title);
+            self.status = format!("{}: {}", self.t("已删除", "Deleted"), title);
         }
     }
 
@@ -196,7 +211,7 @@ impl StellarisApp {
         let path = posts_dir.join(format!("{}.md", slug));
 
         if path.exists() {
-            self.status = format!("文件已存在: {}.md", slug);
+            self.status = format!("{}: {}.md", self.t("文件已存在", "File already exists"), slug);
             return;
         }
 
@@ -218,7 +233,11 @@ draft: true
             self.new_post_title.clear();
             self.show_new_post = false;
             self.load_posts();
-            self.status = format!("已创建: {}.md，双击在编辑器中打开", slug);
+            self.status = format!(
+                "{}: {}.md",
+                self.t("已创建，在编辑器中打开", "Created, open in editor"),
+                slug
+            );
         }
     }
 
@@ -227,7 +246,7 @@ draft: true
             return;
         }
         self.building = true;
-        self.status = "构建中...".to_string();
+        self.status = self.t("构建中...", "Building...");
         let project_dir = self.project_dir.clone();
         let tx = self.msg_tx.clone();
         thread::spawn(move || {
@@ -239,7 +258,7 @@ draft: true
                     {
                         Ok(b) => b,
                         Err(e) => {
-                            let _ = tx.send(Msg::BuildError(format!("初始化失败: {}", e)));
+                            let _ = tx.send(Msg::BuildError(format!("init failed: {}", e)));
                             return;
                         }
                     };
@@ -248,12 +267,12 @@ draft: true
                             let _ = tx.send(Msg::BuildDone(start.elapsed()));
                         }
                         Err(e) => {
-                            let _ = tx.send(Msg::BuildError(format!("构建失败: {}", e)));
+                            let _ = tx.send(Msg::BuildError(format!("build failed: {}", e)));
                         }
                     }
                 }
                 Err(e) => {
-                    let _ = tx.send(Msg::BuildError(format!("读取配置失败: {}", e)));
+                    let _ = tx.send(Msg::BuildError(format!("config failed: {}", e)));
                 }
             }
         });
@@ -264,7 +283,7 @@ draft: true
             return;
         }
         self.deploying = true;
-        self.status = "部署中...".to_string();
+        self.status = self.t("部署中...", "Deploying...");
         let project_dir = self.project_dir.clone();
         let tx = self.msg_tx.clone();
         thread::spawn(move || {
@@ -272,7 +291,7 @@ draft: true
                 .args(["-C", &project_dir.to_string_lossy(), "add", "-A"])
                 .output();
             if add.is_err() || !add.unwrap().status.success() {
-                let _ = tx.send(Msg::DeployError("git add 失败".to_string()));
+                let _ = tx.send(Msg::DeployError("git add failed".to_string()));
                 return;
             }
 
@@ -288,7 +307,7 @@ draft: true
                 ])
                 .output();
             if commit.is_err() {
-                let _ = tx.send(Msg::DeployError("git commit 失败".to_string()));
+                let _ = tx.send(Msg::DeployError("git commit failed".to_string()));
                 return;
             }
 
@@ -302,10 +321,10 @@ draft: true
                 }
                 Ok(o) => {
                     let stderr = String::from_utf8_lossy(&o.stderr);
-                    let _ = tx.send(Msg::DeployError(format!("git push 失败: {}", stderr)));
+                    let _ = tx.send(Msg::DeployError(format!("git push failed: {}", stderr)));
                 }
                 Err(e) => {
-                    let _ = tx.send(Msg::DeployError(format!("git push 失败: {}", e)));
+                    let _ = tx.send(Msg::DeployError(format!("git push failed: {}", e)));
                 }
             }
         });
@@ -316,7 +335,11 @@ draft: true
             match msg {
                 Msg::BuildDone(dur) => {
                     self.building = false;
-                    self.status = format!("✅ 构建完成，耗时 {:.1?}", dur);
+                    self.status = format!(
+                        "{}  {:.1?}",
+                        self.t("✅ 构建完成，耗时", "✅ Build done in"),
+                        dur
+                    );
                 }
                 Msg::BuildError(e) => {
                     self.building = false;
@@ -324,7 +347,10 @@ draft: true
                 }
                 Msg::DeployDone => {
                     self.deploying = false;
-                    self.status = "✅ 部署完成，已推送到 GitHub".to_string();
+                    self.status = self.t(
+                        "✅ 部署完成，已推送到 GitHub",
+                        "✅ Deploy done, pushed to GitHub",
+                    );
                 }
                 Msg::DeployError(e) => {
                     self.deploying = false;
@@ -340,7 +366,10 @@ draft: true
             ui.label("Pulvis");
             ui.separator();
 
-            let items = [("📝 文章", "posts"), ("⚡ 构建", "build")];
+            let items = [
+                (self.t("📝 文章", "📝 Posts"), "posts"),
+                (self.t("⚡ 构建", "⚡ Build"), "build"),
+            ];
             for (label, id) in items {
                 if ui
                     .selectable_label(*selected == id, label)
@@ -351,19 +380,32 @@ draft: true
             }
 
             ui.separator();
-            if ui.button("🔄 刷新列表").clicked() {
+            if ui.button(self.t("🔄 刷新列表", "🔄 Refresh")).clicked() {
                 self.load_posts();
-                self.status = "已刷新".to_string();
+                self.status = self.t("已刷新", "Refreshed");
             }
+
+            // UI language switcher at the bottom
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
+                ui.separator();
+                ui.horizontal(|ui| {
+                    if ui.selectable_label(self.ui_lang == UiLang::Zh, "中文").clicked() {
+                        self.ui_lang = UiLang::Zh;
+                    }
+                    if ui.selectable_label(self.ui_lang == UiLang::En, "EN").clicked() {
+                        self.ui_lang = UiLang::En;
+                    }
+                });
+            });
         });
     }
 
     fn posts_view(&mut self, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
             ui.horizontal(|ui| {
-                ui.heading("文章列表");
+                ui.heading(self.t("文章列表", "Posts"));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui.button("📝 新建文章").clicked() {
+                    if ui.button(self.t("📝 新建文章", "📝 New Post")).clicked() {
                         self.show_new_post = !self.show_new_post;
                     }
                 });
@@ -374,10 +416,10 @@ draft: true
                     .fill(ui.style().visuals.extreme_bg_color)
                     .corner_radius(CornerRadius::same(8))
                     .show(ui, |ui| {
-                        ui.label("标题:");
+                        ui.label(self.t("标题:", "Title:"));
                         ui.text_edit_singleline(&mut self.new_post_title);
                         ui.horizontal(|ui| {
-                            ui.label("语言:");
+                            ui.label(self.t("语言:", "Language:"));
                             egui::ComboBox::from_id_salt("lang")
                                 .selected_text(&self.new_post_lang)
                                 .show_ui(ui, |ui| {
@@ -386,10 +428,10 @@ draft: true
                                 });
                         });
                         ui.horizontal(|ui| {
-                            if ui.button("创建").clicked() {
+                            if ui.button(self.t("创建", "Create")).clicked() {
                                 self.create_post();
                             }
-                            if ui.button("取消").clicked() {
+                            if ui.button(self.t("取消", "Cancel")).clicked() {
                                 self.show_new_post = false;
                             }
                         });
@@ -397,19 +439,8 @@ draft: true
                 ui.add_space(8.0);
             }
 
-            ui.separator();
-
-            ui.horizontal(|ui| {
-                ui.checkbox(&mut self.filter_drafts, "显示草稿");
-                ui.label("语言:");
-                egui::ComboBox::from_id_salt("filter_lang")
-                    .selected_text(&self.filter_lang)
-                    .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut self.filter_lang, "all".to_string(), "全部");
-                        ui.selectable_value(&mut self.filter_lang, "zh".to_string(), "中文");
-                        ui.selectable_value(&mut self.filter_lang, "en".to_string(), "English");
-                    });
-            });
+            let show_drafts = self.t("显示草稿", "Show Drafts");
+            ui.checkbox(&mut self.filter_drafts, show_drafts);
 
             ui.separator();
 
@@ -418,9 +449,6 @@ draft: true
                 .iter()
                 .enumerate()
                 .filter(|(_, p)| {
-                    if self.filter_lang != "all" && p.lang != self.filter_lang {
-                        return false;
-                    }
                     if !self.filter_drafts && p.draft {
                         return false;
                     }
@@ -430,7 +458,7 @@ draft: true
                 .collect();
 
             if filtered.is_empty() {
-                ui.label("暂无文章");
+                ui.label(self.t("暂无文章", "No posts yet"));
                 return;
             }
 
@@ -451,12 +479,16 @@ draft: true
 
                                     ui.vertical(|ui| {
                                         ui.strong(&post.title);
-                                        ui.label(format!(
-                                            "{}  |  {}  |  {}",
-                                            post.date,
-                                            if post.lang == "zh" { "中文" } else { "English" },
-                                            if post.draft { "草稿" } else { "已发布" },
-                                        ));
+                                        let lang_label = match post.lang.as_str() {
+                                            "zh" => "中文",
+                                            _ => "English",
+                                        };
+                                        let status_label = if post.draft {
+                                            self.t("草稿", "Draft")
+                                        } else {
+                                            self.t("已发布", "Published")
+                                        };
+                                        ui.label(format!("{}  |  {}  |  {}", post.date, lang_label, status_label));
                                         if !post.tags.is_empty() {
                                             ui.label(format!("🏷️ {}", post.tags.join(", ")));
                                         }
@@ -469,13 +501,13 @@ draft: true
                                         egui::Layout::right_to_left(egui::Align::Center),
                                         |ui| {
                                             if ui.button("🗑️ 删除")
-                                                .on_hover_text("删除此文章")
+                                                .on_hover_text(self.t("删除此文章", "Delete this post"))
                                                 .clicked()
                                             {
                                                 self.delete_post(idx);
                                             }
                                             if ui.button("✏️ 编辑")
-                                                .on_hover_text("在编辑器中打开")
+                                                .on_hover_text(self.t("在编辑器中打开", "Open in editor"))
                                                 .clicked()
                                             {
                                                 self.open_in_editor(&path);
@@ -492,16 +524,16 @@ draft: true
 
     fn build_view(&mut self, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
-            ui.heading("构建 & 部署");
+            ui.heading(self.t("构建 & 部署", "Build & Deploy"));
             ui.separator();
             ui.add_space(8.0);
 
             ui.horizontal(|ui| {
-                if ui.add_enabled(!self.building, egui::Button::new("⚡ 构建")).clicked() {
+                if ui.add_enabled(!self.building, egui::Button::new(self.t("⚡ 构建", "⚡ Build"))).clicked() {
                     self.build_site();
                 }
 
-                if ui.add_enabled(!self.building && !self.deploying, egui::Button::new("🚀 构建 + 部署")).clicked() {
+                if ui.add_enabled(!self.building && !self.deploying, egui::Button::new(self.t("🚀 构建 + 部署", "🚀 Build + Deploy"))).clicked() {
                     self.build_site();
                     self.deploy();
                 }
@@ -512,13 +544,13 @@ draft: true
             if self.building {
                 ui.horizontal(|ui| {
                     ui.spinner();
-                    ui.label("构建中...");
+                    ui.label(self.t("构建中...", "Building..."));
                 });
             }
             if self.deploying {
                 ui.horizontal(|ui| {
                     ui.spinner();
-                    ui.label("部署中...");
+                    ui.label(self.t("部署中...", "Deploying..."));
                 });
             }
             if self.config.is_some() {
@@ -526,12 +558,19 @@ draft: true
                 Frame::group(ui.style())
                     .corner_radius(CornerRadius::same(6))
                     .show(ui, |ui| {
-                        ui.heading("配置信息");
+                        ui.heading(self.t("配置信息", "Config Info"));
                         let cfg = self.config.as_ref().unwrap();
-                        ui.label(format!("站点标题: {}", cfg.site.default));
-                        ui.label(format!("作者: {}", cfg.author.name));
+                        let lang_text = format!(
+                            "{}: {}",
+                            self.t("站点默认语言", "Default language"),
+                            cfg.site.default
+                        );
+                        ui.label(lang_text);
+                        let author_text = format!("{}: {}", self.t("作者", "Author"), cfg.author.name);
+                        ui.label(author_text);
                         if let Some(email) = &cfg.author.email {
-                            ui.label(format!("邮箱: {}", email));
+                            let email_text = format!("{}: {}", self.t("邮箱", "Email"), email);
+                            ui.label(email_text);
                         }
                     });
             }
