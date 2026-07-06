@@ -2,10 +2,12 @@
   var index = [];
   var input = document.getElementById("search-input");
   var results = document.getElementById("search-results");
-
   if (!input || !results) return;
 
-  fetch("/search.json")
+  var lang = (window.StellarisData && window.StellarisData.lang) || "zh";
+  var emptyMsg = (window.StellarisData && window.StellarisData.searchEmpty) || "未找到相关文章";
+
+  fetch("/" + lang + "/search.json")
     .then(function (r) { return r.json(); })
     .then(function (data) { index = data; })
     .catch(function () {});
@@ -57,7 +59,7 @@
     }
 
     if (hits.length === 0) {
-      results.innerHTML = '<div class="search-result-empty">未找到相关文章</div>';
+      results.innerHTML = '<div class="search-result-empty">' + escapeHtml(emptyMsg) + '</div>';
       results.classList.add("active");
       return;
     }
@@ -66,7 +68,7 @@
     for (var i = 0; i < hits.length; i++) {
       var h = hits[i];
       html +=
-        '<a href="/posts/' + h.slug + '/" class="search-result-item">' +
+        '<a href="/' + lang + '/posts/' + h.slug + '/" class="search-result-item">' +
           '<span class="search-result-title">' + highlight(h.title, q) + "</span>" +
           '<span class="search-result-meta">' + h.date + "</span>" +
         "</a>";

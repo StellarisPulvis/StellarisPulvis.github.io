@@ -133,4 +133,22 @@
   } else {
     initCanvas();
   }
+
+  /* ---------- Reading Progress Bar ---------- */
+  var progressBar = document.querySelector('.reading-progress');
+  if (progressBar) {
+    function updateProgress() {
+      var scrollTop = window.scrollY;
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight <= 0) {
+        progressBar.style.width = '0%';
+        return;
+      }
+      var pct = Math.min((scrollTop / docHeight) * 100, 100);
+      progressBar.style.width = pct + '%';
+    }
+    window.addEventListener('scroll', updateProgress);
+    window.addEventListener('resize', updateProgress);
+    updateProgress();
+  }
 })();

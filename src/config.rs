@@ -21,6 +21,8 @@ pub struct SiteConfig {
     pub languages: Vec<String>,
     #[serde(default = "default_lang")]
     pub default: String,
+    #[serde(default)]
+    pub site_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -146,6 +148,7 @@ impl Default for SiteConfig {
         Self {
             languages: default_languages(),
             default: default_lang(),
+            site_url: None,
         }
     }
 }

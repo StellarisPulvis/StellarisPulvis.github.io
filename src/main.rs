@@ -176,9 +176,14 @@ draft: false
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <script>
     (function(){var t=localStorage.getItem('stellaris-theme');if(t){document.documentElement.setAttribute('data-theme',t);}else if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.setAttribute('data-theme','dark');}})();
+    </script>
+    <script>
+    window.StellarisData = {
+      lang: '{{ lang }}',
+      searchEmpty: '{{ lang_config.search_empty }}',
+    };
     </script>
 </head>
 <body>
@@ -202,7 +207,9 @@ draft: false
     <main>
     {% block content %}{% endblock %}
     </main>
+    {% if is_dev %}
     <script src="/js/livereload.js"></script>
+    {% endif %}
     <script src="/js/search.js"></script>
     <script src="/js/theme.js"></script>
     <script src="/js/character.js"></script>
@@ -505,6 +512,7 @@ async fn cmd_serve(project_dir: &PathBuf, port: u16) -> Result<()> {
 
     let config = config::Config::load(&config_path)?;
     let mut builder = SiteBuilder::new(project_dir, config)?;
+    builder.set_dev_mode(true);
     let summaries = builder.build_all()?;
     for (lang, s) in &summaries {
         println!("✅ [{}] 构建完成: {} 篇文章, 耗时 {:?}", lang, s.posts, s.duration);

@@ -20,6 +20,7 @@ pub struct SiteBuilder {
     output_dir: PathBuf,
     content_dir: PathBuf,
     static_dir: PathBuf,
+    is_dev: bool,
 }
 
 #[derive(serde::Serialize)]
@@ -61,7 +62,12 @@ impl SiteBuilder {
             content_dir,
             static_dir,
             config,
+            is_dev: false,
         })
+    }
+
+    pub fn set_dev_mode(&mut self, yes: bool) {
+        self.is_dev = yes;
     }
 
     pub fn build_all(&mut self) -> Result<Vec<(String, BuildSummary)>> {
@@ -79,13 +85,19 @@ impl SiteBuilder {
         self.copy_static()?;
 
         let mut summaries = Vec::new();
+        let mut all_rendered: HashMap<String, Vec<PostRender>> = HashMap::new();
 
         for lang in &self.config.site.languages {
             if let Some(lang_config) = self.config.languages.get(lang) {
-                let summary = self.build_language(lang, lang_config)?;
+                let (summary, renders) = self.build_language(lang, lang_config)?;
                 summaries.push((lang.clone(), summary));
+                all_rendered.insert(lang.clone(), renders);
             }
         }
+
+        self.generate_sitemap(&all_rendered)?;
+        self.generate_robots()?;
+        self.generate_404()?;
 
         let total = start.elapsed();
         println!("🌐 多语言构建完成，总耗时 {:?}", total);
@@ -97,7 +109,7 @@ impl SiteBuilder {
         &self,
         lang: &str,
         lang_config: &LanguageConfig,
-    ) -> Result<BuildSummary> {
+    ) -> Result<(BuildSummary, Vec<PostRender>)> {
         let start = Instant::now();
         let lang_output = self.output_dir.join(lang);
         std::fs::create_dir_all(&lang_output)?;
@@ -143,7 +155,7 @@ impl SiteBuilder {
             duration,
         };
 
-        Ok(summary)
+        Ok((summary, post_renders))
     }
 
     fn build_redirect(&self) -> Result<()> {
@@ -226,6 +238,7 @@ var lang = navigator.language || navigator.userLanguage || '';
             context.insert("lang_config", lang_config);
             context.insert("lang", lang);
             context.insert("config", &self.config);
+            context.insert("is_dev", &self.is_dev);
             context.insert("post", &post.to_render(post.body_raw.len()));
 
             let html = self
@@ -288,6 +301,7 @@ var lang = navigator.language || navigator.userLanguage || '';
             context.insert("lang_config", lang_config);
             context.insert("lang", lang);
             context.insert("config", &self.config);
+            context.insert("is_dev", &self.is_dev);
             context.insert("posts", page_posts);
             context.insert("stats", &stats);
             context.insert("all_tags", &all_tags);
@@ -362,6 +376,7 @@ var lang = navigator.language || navigator.userLanguage || '';
             context.insert("lang_config", lang_config);
             context.insert("lang", lang);
             context.insert("config", &self.config);
+            context.insert("is_dev", &self.is_dev);
             context.insert("tag", tag_info);
             context.insert("posts", &tag_posts);
 
@@ -388,6 +403,7 @@ var lang = navigator.language || navigator.userLanguage || '';
         context.insert("lang_config", lang_config);
         context.insert("lang", lang);
         context.insert("config", &self.config);
+        context.insert("is_dev", &self.is_dev);
         context.insert("tags", tags);
 
         let html = self.templates.render("tags.html", &context)?;
@@ -408,6 +424,7 @@ var lang = navigator.language || navigator.userLanguage || '';
         context.insert("lang_config", lang_config);
         context.insert("lang", lang);
         context.insert("config", &self.config);
+        context.insert("is_dev", &self.is_dev);
 
         let html = self.templates.render("about.html", &context)?;
 
@@ -498,6 +515,78 @@ var lang = navigator.language || navigator.userLanguage || '';
         }
 
         self.markdown.render(paragraph.trim())
+    }
+
+    fn generate_sitemap(&self, all_rendered: &HashMap<String, Vec<PostRender>>) -> Result<()> {
+        let mut xml = String::from(
+            r#"<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+"#,
+        );
+        for lang in &self.config.site.languages {
+            let lang_url = format!("  <url><loc>/{}/</loc></url>\n", lang);
+            xml.push_str(&lang_url);
+            if let Some(posts) = all_rendered.get(lang) {
+                for post in posts {
+                    xml.push_str(&format!(
+                        "  <url><loc>/{}/posts/{}/</loc></url>\n",
+                        lang, post.slug
+                    ));
+                }
+            }
+        }
+        xml.push_str("</urlset>\n");
+        std::fs::write(self.output_dir.join("sitemap.xml"), &xml)?;
+        Ok(())
+    }
+
+    fn generate_robots(&self) -> Result<()> {
+        let robots = format!(
+            "User-agent: *\nAllow: /\n\nSitemap: {}/sitemap.xml\n",
+            self.config.site.site_url.as_deref().unwrap_or("https://stellarispulvis.github.io")
+        );
+        std::fs::write(self.output_dir.join("robots.txt"), &robots)?;
+        Ok(())
+    }
+
+    fn generate_404(&self) -> Result<()> {
+        let languages = &self.config.site.languages;
+        let default = &self.config.site.default;
+
+        let cases: String = languages
+            .iter()
+            .map(|l| {
+                format!(
+                    "  if (lang.startsWith('{}')) {{ window.location.href = '/{}/404'; }}",
+                    lang_code_to_bcp47(l),
+                    l
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        let html = format!(
+            r#"<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>404 - Not Found</title>
+<script>
+var lang = navigator.language || navigator.userLanguage || '';
+{}
+  window.location.href = '/{}/404';
+</script>
+</head>
+<body>
+<p>Redirecting...</p>
+</body>
+</html>"#,
+            cases, default
+        );
+
+        std::fs::write(self.output_dir.join("404.html"), &html)?;
+        Ok(())
     }
 }
 
